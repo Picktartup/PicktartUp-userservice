@@ -14,6 +14,7 @@ public class ContractDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "details_seq_generator")
     @SequenceGenerator(name = "details_seq_generator", sequenceName = "details_seq", allocationSize = 1)
+    @Column(name = "details_id")
     private Long detailsId;
 
     @OneToOne

@@ -17,10 +17,11 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq_generator")
     @SequenceGenerator(name = "users_seq_generator", sequenceName = "users_seq", allocationSize = 1)
+    @Column(name = "users_id")
     private Long userId;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "wallet_id", referencedColumnName = "wallet_id")
+    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     private String username;
@@ -38,4 +39,5 @@ public class Users {
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
     private Set<CoinTransaction> transactions;
+
 }

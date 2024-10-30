@@ -18,6 +18,7 @@ public class Startup {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "startup_seq_generator")
     @SequenceGenerator(name = "startup_seq_generator", sequenceName = "startup_seq", allocationSize = 1)
+    @Column(name = "startup_id")
     private Long startupId;
 
     @OneToOne

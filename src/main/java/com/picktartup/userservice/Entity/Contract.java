@@ -17,6 +17,7 @@ public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contract_seq_generator")
     @SequenceGenerator(name = "contract_seq_generator", sequenceName = "contract_seq", allocationSize = 1)
+    @Column(name = "contract_id")
     private Long contractId;
 
     private LocalDateTime signedAt;

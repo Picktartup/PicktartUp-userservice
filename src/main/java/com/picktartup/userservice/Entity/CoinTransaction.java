@@ -16,7 +16,9 @@ public class CoinTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq_generator")
     @SequenceGenerator(name = "transaction_seq_generator", sequenceName = "transaction_seq", allocationSize = 1)
+    @Column(name = "transaction_id")
     private Long transactionId;
+
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
@@ -26,5 +28,5 @@ public class CoinTransaction {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private Users users;
 }
