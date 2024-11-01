@@ -1,10 +1,8 @@
-package com.picktartup.userservice.Entity;
+package com.picktartup.userservice.entity;
 
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Set;
 
 @Builder
 @AllArgsConstructor

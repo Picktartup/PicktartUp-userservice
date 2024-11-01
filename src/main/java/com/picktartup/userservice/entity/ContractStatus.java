@@ -1,4 +1,4 @@
-package com.picktartup.userservice.Entity;
+package com.picktartup.userservice.entity;
 
 public enum ContractStatus {
     ACTIVE,
