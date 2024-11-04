@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis
+    container_name: fs_redis
+    command: redis-server --port 6379
+    restart: always
+    hostname: redis
+    ports:
+      - "6379:6379"
+#  db:
+#    image: postgres:15
+#    container_name: postgres
+#    environment:
+#      PGUSER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      POSTGRES_DB: ${POSTGRES_DB}
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    restart: always
+
+#services:
+#  mysql:
+#    container_name: mysql
+#    image: mysql:8.0
+#    environment:
+#      MYSQL_DATABASE: userdb
+#      MYSQL_ROOT_PASSWORD: test1234
+#      MYSQL_ROOT_HOST: '%'
+#      TZ: 'Asia/Seoul'
+#    ports:
+#      - "3306:3306"
+#    command:
+#      - "mysqld"
+#      - "--character-set-server=utf8mb4"
+#      - "--collation-server=utf8mb4_unicode_ci"
+#    deploy:
+#      restart_policy:
+#        condition: on-failure
+#        delay: 5s
+#        max_attempts: 3
+#
+#volumes:
+#  postgres_data:
