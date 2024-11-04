@@ -34,16 +34,17 @@ public class UserController {
         return healthStatus.toString(); // 텍스트 형식으로 반환
     }
 
-    @Operation(summary = "사용자 회원가입")
+    @Operation(summary = "사용자 회원가입과 관련된 API")
     @PostMapping("/register")
     public CommonResult userRegister(@RequestBody UserRequestDto userRequestDto){
         return userService.register(userRequestDto);
     }
 
-    @Operation(summary = "사용자 로그인")
+    @Operation(summary = "사용자 로그인과 관련된 API")
     @PostMapping("/login")
     public CommonResult userLogin(@RequestBody UserLoginRequest loginRequest){
         JWTAuthResponse token = userService.login(loginRequest);
         return responseService.getSingleResult(token);
     }
+
 }

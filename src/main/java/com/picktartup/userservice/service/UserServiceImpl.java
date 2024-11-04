@@ -7,8 +7,10 @@ import com.picktartup.userservice.dto.request.UserRequestDto;
 import com.picktartup.userservice.dto.response.JWTAuthResponse;
 import com.picktartup.userservice.entity.Role;
 import com.picktartup.userservice.entity.UserEntity;
+import com.picktartup.userservice.exception.BusinessLogicException;
 import com.picktartup.userservice.exception.ExceptionList;
 import com.picktartup.userservice.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -70,5 +72,33 @@ public class UserServiceImpl implements UserService{
         JWTAuthResponse token = jwtTokenProvider.generateToken(authentication, userId, name);
         return token;
 
+    }
+
+    @Override
+    public void logout(HttpServletRequest request) {
+        String accessToken = jwtTokenProvider.resolveToken(request);
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+
+        if (!jwtTokenProvider.validateToken(accessToken)) {
+            throw new BusinessLogicException(ExceptionList.TOKEN_INVALID);
+        }
+        //access token에서 인증정보 조회
+        Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+        String username = authentication.getName(); //사용자 이메일
+
+        //아이디로 조회되는 refresh token 이 있으면 삭제
+        if(redisServiceImpl.getValues(username)!=null){
+            redisServiceImpl.deleteValues(username);
+        }
+
+        //Access Token 남은 유효시간 가지고 와서 blacklist에 추가
+        Long expiration = jwtTokenProvider.getAccessTokenExpiration(accessToken);
+        redisServiceImpl.setBlackList(accessToken, "access_token", expiration);
+
+        // Refresh Token 남은 유효시간 가지고 와서 blacklist에 추가
+        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+            Long refreshTokenExpiration = jwtTokenProvider.getRefreshTokenExpiration(refreshToken);
+            redisServiceImpl.setBlackList(refreshToken, "refresh_token", refreshTokenExpiration);
+        }
     }
 }
