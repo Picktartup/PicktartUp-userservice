@@ -1,4 +1,4 @@
-package com.picktartup.userservice.Entity;
+package com.picktartup.userservice.entity;
 
 
 import jakarta.persistence.*;
@@ -18,6 +18,7 @@ public class Startup {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "startup_seq_generator")
     @SequenceGenerator(name = "startup_seq_generator", sequenceName = "startup_seq", allocationSize = 1)
+    @Column(name = "startup_id")
     private Long startupId;
 
     @OneToOne
@@ -29,10 +30,14 @@ public class Startup {
     private String category;
     private String progress;
     private Double ssi;
-    private LocalDateTime contractDeadline;
+    // 계약 시작 날짜
+    private LocalDateTime contractStartDate;
+    // 계약 목표만료 기한
     private LocalDateTime contractTargetDeadline;
     private Integer goalCoin;
     private Double expectedReturn;
+    // 모금코인 추가
+    private Integer currentCoin;
 
     @OneToMany(mappedBy = "startup", cascade = CascadeType.ALL)
     private Set<Contract> contracts;
