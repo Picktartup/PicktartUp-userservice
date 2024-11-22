@@ -73,7 +73,6 @@ public class JwtTokenProvider {
                 .compact();
 
         redisService.setValues(email, refreshToken, Duration.ofMillis(REFRESH_TOKEN_VALID_TIME));
-
         return JWTAuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

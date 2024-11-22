@@ -20,7 +20,6 @@ public class UserEntity {
     @SequenceGenerator(name = "users_seq_generator", sequenceName = "users_seq", allocationSize = 1)
     private Long userId;
 
-
     @Column(name = "name", nullable = false, length = 50)
     private String username;
 
@@ -39,7 +38,4 @@ public class UserEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // Wallet 서비스 ID 참조 : 간접참조
-    @Column(name = "wallet_id")
-    private Long walletId;
 }
