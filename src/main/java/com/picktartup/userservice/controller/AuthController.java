@@ -26,4 +26,10 @@ public class AuthController {
         userService.logout(request);
         return responseService.getSuccessfulResult();
     }
+
+    @Operation(summary = "사용자 정보 조회", description = "userId를 기반으로 사용자 정보를 반환하는 API")
+    @GetMapping("/{userId}")
+    public CommonResult getUserById(@PathVariable Long userId) {
+        return responseService.getSingleResult(userService.getUserById(userId));
+    }
 }
