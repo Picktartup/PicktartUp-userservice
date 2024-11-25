@@ -2,6 +2,7 @@ package com.picktartup.userservice.service;
 
 import com.picktartup.userservice.common.CommonResult;
 import com.picktartup.userservice.config.jwt.JwtTokenProvider;
+import com.picktartup.userservice.dto.UserDto;
 import com.picktartup.userservice.dto.request.UserLoginRequest;
 import com.picktartup.userservice.dto.request.UserRequestDto;
 import com.picktartup.userservice.dto.response.JWTAuthResponse;
@@ -49,9 +50,9 @@ public class UserServiceImpl implements UserService{
             return responseService.getFailResult(ExceptionList.EMAIL_ALREADY_EXISTS.getCode(), ExceptionList.EMAIL_ALREADY_EXISTS.getMessage());
         }
 
-        ModelMapper mapper = new ModelMapper();
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        UserEntity userEntity = mapper.map(userRequestDto, UserEntity.class);
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        UserEntity userEntity = modelMapper.map(userRequestDto, UserEntity.class);
         userEntity.setEncryptedPwd(pwdEncoder.encode(userRequestDto.getPassword()));
         userEntity.setRole(Role.USER);
         userEntity.setCreatedAt(LocalDateTime.now());
@@ -100,5 +101,13 @@ public class UserServiceImpl implements UserService{
             Long refreshTokenExpiration = jwtTokenProvider.getRefreshTokenExpiration(refreshToken);
             redisServiceImpl.setBlackList(refreshToken, "refresh_token", refreshTokenExpiration);
         }
+    }
+
+    @Override
+    public UserDto.UserResponseDto getUserById(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionList.USER_NOT_FOUND));
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(user, UserDto.UserResponseDto.class);
     }
 }
