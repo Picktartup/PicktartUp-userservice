@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @Tag(name = "사용자 인증 API", description = "사용자 로그아웃과 관련된 API")
 @Slf4j
@@ -52,4 +51,5 @@ public class AuthController {
         UserDto.UserValidationResponse validation = userService.validateUser(userId);
         return responseService.getSingleResult(validation);
     }
+
 }

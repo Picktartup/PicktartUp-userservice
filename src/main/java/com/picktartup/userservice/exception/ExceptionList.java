@@ -30,11 +30,13 @@ public enum ExceptionList {
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
     TOKEN_INVALID(401, "유효하지 않은 토큰입니다."),
     AUTHENTICATION_FAILED(401, "인증에 실패했습니다."),
+    TOKEN_IS_NOT_SAME(401, "토큰이 일치하지 않습니다."),
+    HEADER_REFRESH_TOKEN_NOT_EXISTS(401, "Refresh Token이 존재하지 않습니다."),
 
     // 데이터베이스 관련 예외
     DATABASE_ERROR(500, "데이터베이스 오류가 발생했습니다."),
     DUPLICATE_ENTRY(409, "중복된 데이터가 존재합니다."),
-    DATA_NOT_FOUND(404, "데이터를 찾을 수 없습니다.");
+    DATA_NOT_FOUND(404, "데이터를 찾을 수 없습d니다.");
 
     private final int code;
     private final String message;

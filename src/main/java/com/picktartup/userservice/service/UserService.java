@@ -15,4 +15,6 @@ public interface UserService {
     UserDto.UserInfoResponse getUserById(Long userId);
 
     UserDto.UserValidationResponse validateUser(Long userId);
+
+    UserDto.AuthResponse reissueAccessToken(HttpServletRequest request);
 }

@@ -8,6 +8,8 @@ import com.picktartup.userservice.service.ResponseService;
 import com.picktartup.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +45,15 @@ public class UserController {
     public CommonResult userLogin(@RequestBody UserDto.SignInRequest loginRequest){
         UserDto.AuthResponse token = userService.login(loginRequest);
         return responseService.getSingleResult(token);
+    }
+
+    @Operation(summary = "토큰 재발급", description = "리프레쉬 토큰으로 액세스 토큰을 재발급 하는 API")
+    @PatchMapping("/reissue")
+    public CommonResult reissue(HttpServletRequest request,
+                                HttpServletResponse response) {
+
+        UserDto.AuthResponse newAccessToken = userService.reissueAccessToken(request);
+        return responseService.getSingleResult(newAccessToken);
     }
 
 }

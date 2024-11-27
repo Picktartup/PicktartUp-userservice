@@ -145,11 +145,11 @@ public class JwtTokenProvider {
 
     // Request Header에 Refresh Token 정보를 추출하는 메서드
     public String resolveRefreshToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Refresh");
-        if (StringUtils.hasText(bearerToken)) {
-            return bearerToken;
+        String bearerToken = request.getHeader("RefreshToken");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
-        return null;
+        return bearerToken;
     }
 
     // 토큰의 유효성 검증
