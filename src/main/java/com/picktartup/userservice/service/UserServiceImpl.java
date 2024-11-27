@@ -125,4 +125,18 @@ public class UserServiceImpl implements UserService{
 
         return userResponse;
     }
+
+    @Override
+    public UserDto.UserValidationResponse validateUser(Long userId) {
+        // 1. User 정보 조회
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionList.USER_NOT_FOUND));
+
+        // 2. UserValidationResponse 생성 및 반환
+        return UserDto.UserValidationResponse.builder()
+                .id(user.getUserId())
+                .username(user.getUsername())
+                .status(user.getIsActivated() ? "ACTIVE" : "INACTIVE")  // Boolean 값을 상태 문자열로 변환
+                .build();
+    }
 }

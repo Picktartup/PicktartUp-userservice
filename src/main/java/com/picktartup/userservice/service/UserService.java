@@ -13,4 +13,6 @@ public interface UserService {
     void logout(HttpServletRequest request);
 
     UserDto.UserInfoResponse getUserById(Long userId);
+
+    UserDto.UserValidationResponse validateUser(Long userId);
 }
