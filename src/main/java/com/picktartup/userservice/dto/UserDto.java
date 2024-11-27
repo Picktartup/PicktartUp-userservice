@@ -79,4 +79,14 @@ public class UserDto {
         private BigDecimal walletBalance;
         private String walletStatus;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserValidationResponse {
+        private Long id;
+        private String username;
+        private String status;  // ACTIVE, INACTIVE 등 사용자 상태
+    }
 }

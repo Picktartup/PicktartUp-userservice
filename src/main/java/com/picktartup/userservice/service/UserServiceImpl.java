@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -104,6 +105,7 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Override
     public UserDto.UserInfoResponse getUserById(Long userId) {
         ModelMapper modelMapper = new ModelMapper();
         // 1. User 정보 조회
@@ -125,4 +127,43 @@ public class UserServiceImpl implements UserService{
 
         return userResponse;
     }
+
+    @Override
+    public UserDto.UserValidationResponse validateUser(Long userId) {
+        // 1. User 정보 조회
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionList.USER_NOT_FOUND));
+
+        // 2. UserValidationResponse 생성 및 반환
+        return UserDto.UserValidationResponse.builder()
+                .id(user.getUserId())
+                .username(user.getUsername())
+                .status(user.getIsActivated() ? "ACTIVE" : "INACTIVE")  // Boolean 값을 상태 문자열로 변환
+                .build();
+    }
+
+    @Override
+    public UserDto.AuthResponse reissueAccessToken(HttpServletRequest request) {
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
+        this.verifiedRefreshToken(refreshToken);
+
+        String email = jwtTokenProvider.getEmail(refreshToken);
+        String redisRefreshToken = redisServiceImpl.getValues(email);
+
+        if (redisServiceImpl.checkExistsValue(redisRefreshToken) && refreshToken.equals(redisRefreshToken)) {
+            Optional<UserEntity> findUser = userRepository.findByEmail(email);
+            UserEntity userEntity = UserEntity.of(findUser);
+            UserDto.AuthResponse tokenDto = jwtTokenProvider.generateToken(jwtTokenProvider.getAuthentication(refreshToken), userEntity.getUserId(), userEntity.getUsername());
+            return tokenDto;
+        } else throw new BusinessLogicException(ExceptionList.TOKEN_IS_NOT_SAME);
+
+    }
+
+    private void verifiedRefreshToken(String refreshToken) {
+        if (refreshToken == null) {
+            throw new BusinessLogicException(ExceptionList.HEADER_REFRESH_TOKEN_NOT_EXISTS);
+        }
+    }
+
+
 }

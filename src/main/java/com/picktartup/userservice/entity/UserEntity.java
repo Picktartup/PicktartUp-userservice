@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -37,5 +38,9 @@ public class UserEntity {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    public static UserEntity of(Optional<UserEntity> userEntity) {
+        return userEntity.orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
 }

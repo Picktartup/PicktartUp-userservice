@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @Tag(name = "사용자 인증 API", description = "사용자 로그아웃과 관련된 API")
 @Slf4j
@@ -40,12 +39,17 @@ public class AuthController {
     public SingleResult<UserDto.UserInfoResponse> getUserById(@PathVariable Long userId) {
         try {
             UserDto.UserInfoResponse response = userService.getUserById(userId);
-            log.info("Successfully fetched user and wallet info for userId: {}", userId);
             return responseService.getSingleResult(response);
         } catch (Exception e) {
-            log.error("Error fetching user info for userId {}: {}", userId, e.getMessage());
             throw e;
         }
+    }
+
+    // 사용자 존재 여부 확인용 간단 API
+    @GetMapping("/{userId}/validation")
+    public SingleResult<UserDto.UserValidationResponse> validateUser(@PathVariable Long userId) {
+        UserDto.UserValidationResponse validation = userService.validateUser(userId);
+        return responseService.getSingleResult(validation);
     }
 
 }
