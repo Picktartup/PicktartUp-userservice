@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: user-service
   config:
     activate:
       on-profile: local
@@ -34,3 +36,4 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+
