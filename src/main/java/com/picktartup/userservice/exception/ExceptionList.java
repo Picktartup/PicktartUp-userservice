@@ -13,6 +13,12 @@ public enum ExceptionList {
     UNAUTHORIZED(401, "인증이 필요합니다."),
     FORBIDDEN(403, "접근 권한이 없습니다."),
     NOT_FOUND(404, "요청한 자원을 찾을 수 없습니다."),
+    CLIENT_ERROR(400, "클라이언트 오류가 발생했습니다."),
+
+    // 지갑 관련 예외
+    WALLET_NOT_FOUND(404, "지갑을 찾을 수 없습니다."),
+    WALLET_SERVICE_ERROR(500, "지갑 서비스 오류가 발생했습니다."),
+    WALLET_SERVICE_CLIENT_ERROR(400, "지갑 서비스 요청이 잘못되었습니다."),
 
     // 사용자 관련 예외
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),

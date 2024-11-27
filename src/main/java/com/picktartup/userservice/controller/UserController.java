@@ -3,9 +3,7 @@ package com.picktartup.userservice.controller;
 //jwt 인증이 필요 없는 api
 
 import com.picktartup.userservice.common.CommonResult;
-import com.picktartup.userservice.dto.request.UserLoginRequest;
-import com.picktartup.userservice.dto.request.UserRequestDto;
-import com.picktartup.userservice.dto.response.JWTAuthResponse;
+import com.picktartup.userservice.dto.UserDto;
 import com.picktartup.userservice.service.ResponseService;
 import com.picktartup.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,14 +34,14 @@ public class UserController {
 
     @Operation(summary = "사용자 회원가입과 관련된 API")
     @PostMapping("/register")
-    public CommonResult userRegister(@RequestBody UserRequestDto userRequestDto){
-        return userService.register(userRequestDto);
+    public CommonResult userRegister(@RequestBody UserDto.SignUpRequest signUpRequest){
+        return userService.register(signUpRequest);
     }
 
     @Operation(summary = "사용자 로그인과 관련된 API")
     @PostMapping("/login")
-    public CommonResult userLogin(@RequestBody UserLoginRequest loginRequest){
-        JWTAuthResponse token = userService.login(loginRequest);
+    public CommonResult userLogin(@RequestBody UserDto.SignInRequest loginRequest){
+        UserDto.AuthResponse token = userService.login(loginRequest);
         return responseService.getSingleResult(token);
     }
 

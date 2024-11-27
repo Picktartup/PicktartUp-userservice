@@ -3,14 +3,13 @@ package com.picktartup.userservice.service;
 import com.picktartup.userservice.common.CommonResult;
 import com.picktartup.userservice.config.jwt.JwtTokenProvider;
 import com.picktartup.userservice.dto.UserDto;
-import com.picktartup.userservice.dto.request.UserLoginRequest;
-import com.picktartup.userservice.dto.request.UserRequestDto;
-import com.picktartup.userservice.dto.response.JWTAuthResponse;
+import com.picktartup.userservice.dto.WalletDto;
 import com.picktartup.userservice.entity.Role;
 import com.picktartup.userservice.entity.UserEntity;
 import com.picktartup.userservice.exception.BusinessLogicException;
 import com.picktartup.userservice.exception.ExceptionList;
 import com.picktartup.userservice.repository.UserRepository;
+import com.picktartup.userservice.webclient.WalletServiceClient;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
+    private final WalletServiceClient walletServiceClient;
     private final ResponseService responseService;
     private final BCryptPasswordEncoder pwdEncoder;
 
@@ -43,17 +43,18 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    public CommonResult register(UserRequestDto userRequestDto) {
+    public CommonResult register(UserDto.SignUpRequest signUpRequest) {
 
         /* 중복 아이디 체크 */
-        if(userRepository.existsByEmail(userRequestDto.getEmail())){
+        if(userRepository.existsByEmail(signUpRequest.getEmail())){
             return responseService.getFailResult(ExceptionList.EMAIL_ALREADY_EXISTS.getCode(), ExceptionList.EMAIL_ALREADY_EXISTS.getMessage());
         }
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        UserEntity userEntity = modelMapper.map(userRequestDto, UserEntity.class);
-        userEntity.setEncryptedPwd(pwdEncoder.encode(userRequestDto.getPassword()));
+
+        UserEntity userEntity = modelMapper.map(signUpRequest, UserEntity.class);
+        userEntity.setEncryptedPwd(pwdEncoder.encode(signUpRequest.getPassword()));
         userEntity.setRole(Role.USER);
         userEntity.setCreatedAt(LocalDateTime.now());
         userRepository.save(userEntity);
@@ -63,14 +64,14 @@ public class UserServiceImpl implements UserService{
 
     @Transactional(readOnly = true)
     @Override
-    public JWTAuthResponse login(UserLoginRequest loginRequest) {
+    public UserDto.AuthResponse login(UserDto.SignInRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         Long userId = myUserDetailsService.findUserIdByEmail(loginRequest.getEmail()); //1
         String name = myUserDetailsService.findNameByEmail(loginRequest.getEmail()); //fisa@gmail.com
-        JWTAuthResponse token = jwtTokenProvider.generateToken(authentication, userId, name);
+        UserDto.AuthResponse token = jwtTokenProvider.generateToken(authentication, userId, name);
         return token;
 
     }
@@ -103,11 +104,25 @@ public class UserServiceImpl implements UserService{
         }
     }
 
-    @Override
-    public UserDto.UserResponseDto getUserById(Long userId) {
+    public UserDto.UserInfoResponse getUserById(Long userId) {
+        ModelMapper modelMapper = new ModelMapper();
+        // 1. User 정보 조회
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionList.USER_NOT_FOUND));
-        ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(user, UserDto.UserResponseDto.class);
+
+        // 2. Wallet 정보 조회
+        WalletDto.Details wallet = walletServiceClient.getWalletByUserId(userId);
+
+        // 3. Response 생성
+        UserDto.UserInfoResponse userResponse = modelMapper.map(user, UserDto.UserInfoResponse.class);
+
+        // 4. Wallet 정보 설정
+        if (wallet != null && wallet.getAddress() != null) {
+            userResponse.setWalletAddress(wallet.getAddress());
+            userResponse.setWalletBalance(wallet.getBalance());
+            userResponse.setWalletStatus(wallet.getStatus());
+        }
+
+        return userResponse;
     }
 }
