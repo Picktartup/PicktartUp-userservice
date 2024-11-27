@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -28,12 +29,25 @@ public class ResponseService {
         return result;
     }
 
+    // 단일건 결과 처리 메서드 - 비동기
+    public <T> Mono<SingleResult<T>> getMonoSingleResult(Mono<T> data) {
+        return data.map(result -> {
+            SingleResult<T> singleResult = new SingleResult<>();
+            singleResult.setData(result);
+            singleResult.setSuccess(true);
+            singleResult.setCode(0);
+            singleResult.setMessage("성공하였습니다.");
+            return singleResult;
+        });
+    }
+
     public <T> ListResult<T> getListResult(List<T> list) {
         ListResult<T> result = new ListResult<T>();
         result.setList(list);
         this.setSuccessResult(result);
         return result;
     }
+
     public CommonResult getSuccessfulResult() {
         CommonResult result = new CommonResult();
         this.setSuccessResult(result);
@@ -69,4 +83,5 @@ public class ResponseService {
         result.setCode(CommonResponse.SUCCESS.getCode());
         result.setMessage(CommonResponse.SUCCESS.getMessage());
     }
+
 }
