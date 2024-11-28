@@ -87,6 +87,7 @@ public class UserDto {
     public static class UserValidationResponse {
         private Long id;
         private String username;
+        private String email;
         private String status;  // ACTIVE, INACTIVE 등 사용자 상태
     }
 }
