@@ -137,6 +137,7 @@ public class UserServiceImpl implements UserService{
         // 2. UserValidationResponse 생성 및 반환
         return UserDto.UserValidationResponse.builder()
                 .id(user.getUserId())
+                .email(user.getEmail())
                 .username(user.getUsername())
                 .status(user.getIsActivated() ? "ACTIVE" : "INACTIVE")  // Boolean 값을 상태 문자열로 변환
                 .build();
