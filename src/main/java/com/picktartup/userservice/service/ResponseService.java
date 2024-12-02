@@ -29,6 +29,15 @@ public class ResponseService {
         return result;
     }
 
+    public <T> SingleResult<T> getSingleResultwithMessage(T data, String message) {
+        SingleResult<T> result = new SingleResult<>();
+        result.setSuccess(true);
+        result.setCode(200);
+        result.setMessage(message);
+        result.setData(data);
+        return result;
+    }
+
     // 단일건 결과 처리 메서드 - 비동기
     public <T> Mono<SingleResult<T>> getMonoSingleResult(Mono<T> data) {
         return data.map(result -> {

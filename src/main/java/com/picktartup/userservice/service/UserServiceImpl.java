@@ -1,6 +1,7 @@
 package com.picktartup.userservice.service;
 
 import com.picktartup.userservice.common.CommonResult;
+import com.picktartup.userservice.common.SingleResult;
 import com.picktartup.userservice.config.jwt.JwtTokenProvider;
 import com.picktartup.userservice.dto.UserDto;
 import com.picktartup.userservice.dto.WalletDto;
@@ -42,13 +43,12 @@ public class UserServiceImpl implements UserService{
     private final MyUserDetailsService myUserDetailsService;
     private final RedisServiceImpl redisServiceImpl;
 
-
     @Override
-    public CommonResult register(UserDto.SignUpRequest signUpRequest) {
+    public SingleResult<Long> register(UserDto.SignUpRequest signUpRequest) {
 
-        /* 중복 아이디 체크 */
-        if(userRepository.existsByEmail(signUpRequest.getEmail())){
-            return responseService.getFailResult(ExceptionList.EMAIL_ALREADY_EXISTS.getCode(), ExceptionList.EMAIL_ALREADY_EXISTS.getMessage());
+        /* 중복 이메일 체크 */
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            throw new BusinessLogicException(ExceptionList.EMAIL_ALREADY_EXISTS);
         }
 
         ModelMapper modelMapper = new ModelMapper();
@@ -58,10 +58,12 @@ public class UserServiceImpl implements UserService{
         userEntity.setEncryptedPwd(pwdEncoder.encode(signUpRequest.getPassword()));
         userEntity.setRole(Role.USER);
         userEntity.setCreatedAt(LocalDateTime.now());
-        userRepository.save(userEntity);
+        UserEntity savedUser = userRepository.save(userEntity);
 
-        return responseService.getSuccessfulResultWithMessage("사용자 회원가입이 성공적으로 완료되었습니다!");
+        return responseService.getSingleResultwithMessage(savedUser.getUserId(),
+                "사용자 회원가입이 성공적으로 완료되었습니다!");
     }
+
 
     @Transactional(readOnly = true)
     @Override

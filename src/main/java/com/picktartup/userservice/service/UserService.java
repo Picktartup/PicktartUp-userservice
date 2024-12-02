@@ -1,12 +1,12 @@
 package com.picktartup.userservice.service;
 
-import com.picktartup.userservice.common.CommonResult;
+import com.picktartup.userservice.common.SingleResult;
 import com.picktartup.userservice.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService {
 
-    CommonResult register(UserDto.SignUpRequest signUpRequest);
+    SingleResult<Long> register(UserDto.SignUpRequest signUpRequest);
 
     UserDto.AuthResponse login(UserDto.SignInRequest loginRequest);
 

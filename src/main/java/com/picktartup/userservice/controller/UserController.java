@@ -3,6 +3,7 @@ package com.picktartup.userservice.controller;
 //jwt 인증이 필요 없는 api
 
 import com.picktartup.userservice.common.CommonResult;
+import com.picktartup.userservice.common.SingleResult;
 import com.picktartup.userservice.dto.UserDto;
 import com.picktartup.userservice.service.ResponseService;
 import com.picktartup.userservice.service.UserService;
@@ -36,7 +37,7 @@ public class UserController {
 
     @Operation(summary = "사용자 회원가입과 관련된 API")
     @PostMapping("/register")
-    public CommonResult userRegister(@RequestBody UserDto.SignUpRequest signUpRequest){
+    public SingleResult<Long> userRegister(@RequestBody UserDto.SignUpRequest signUpRequest){
         return userService.register(signUpRequest);
     }
 
