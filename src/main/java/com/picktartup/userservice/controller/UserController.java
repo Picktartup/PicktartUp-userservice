@@ -57,4 +57,11 @@ public class UserController {
         return responseService.getSingleResult(newAccessToken);
     }
 
+    // 사용자 존재 여부 확인용 간단 API
+    @GetMapping("/{userId}/validation")
+    public SingleResult<UserDto.UserValidationResponse> validateUser(@PathVariable Long userId) {
+        UserDto.UserValidationResponse validation = userService.validateUser(userId);
+        return responseService.getSingleResult(validation);
+    }
+
 }
