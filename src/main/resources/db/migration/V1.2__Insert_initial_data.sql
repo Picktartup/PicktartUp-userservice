@@ -7,6 +7,6 @@ VALUES
     ('이서준', 'seojun@kakao.com', '$2a$10$YOUR_ENCRYPTED_PWD_HERE', 'USER', true, CURRENT_TIMESTAMP),
     ('최민서', 'minseo@gmail.com', '$2a$10$YOUR_ENCRYPTED_PWD_HERE', 'USER', true, CURRENT_TIMESTAMP),
     ('류채현', 'lch010201@gmail.com', '$2a$10$YOUR_ENCRYPTED_PWD_HERE', 'USER', true, CURRENT_TIMESTAMP),
-    ('최나영', 'dmddl282@gmail.com', '$2a$10$YOUR_ENCRYPTED_PWD_HERE', 'USER', true, CURRENT_TIMESTAMP),
+    ('최나영', 'dmddl282@gmail.com', '$2a$10$YOUR_ENCRYPTED_PWD_HERE', 'USER', true, CURRENT_TIMESTAMP);
 
 
