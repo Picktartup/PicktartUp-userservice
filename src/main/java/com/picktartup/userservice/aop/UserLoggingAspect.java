@@ -3,22 +3,17 @@ package com.picktartup.userservice.aop;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktartup.userservice.dto.UserDto;
 import com.picktartup.userservice.exception.BusinessLogicException;
-import com.picktartup.userservice.service.RedisServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Aspect
