@@ -47,7 +47,8 @@ public class UserLoggingAspect {
             long executionTime = System.currentTimeMillis() - startTime;
 
             logData.put("response_time_ms", executionTime);
-            logData.put("status", "success");
+            logData.put("success", true);
+            logData.put("http_status", 200); // 성공 상태 코드
             log.info(objectMapper.writeValueAsString(logData));
             return result;
 
@@ -55,7 +56,8 @@ public class UserLoggingAspect {
             long executionTime = System.currentTimeMillis() - startTime;
 
             logData.put("response_time_ms", executionTime);
-            logData.put("status", "failed");
+            logData.put("success", false);
+            logData.put("http_status", 500); // 실패 상태 코드
             logData.put("error_message", e.getMessage());
             log.error(objectMapper.writeValueAsString(logData));
             throw e;
@@ -65,7 +67,6 @@ public class UserLoggingAspect {
     // 로그인 모니터링 (특정 API)
     @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.login(..))")
     public Object monitorLogin(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
         Map<String, Object> logData = new HashMap<>();
         logData.put("event_type", "login_attempt");
 
@@ -75,7 +76,6 @@ public class UserLoggingAspect {
     // 회원가입 모니터링
     @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.register(..))")
     public Object monitorRegistration(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
         Map<String, Object> logData = new HashMap<>();
         logData.put("event_type", "registration");
 
@@ -111,7 +111,8 @@ public class UserLoggingAspect {
             long executionTime = System.currentTimeMillis() - startTime;
 
             logData.put("response_time_ms", executionTime);
-            logData.put("status", "success");
+            logData.put("success", true);
+            logData.put("http_status", 200); // 성공 상태 코드
             log.info(objectMapper.writeValueAsString(logData));
             return result;
 
@@ -119,7 +120,8 @@ public class UserLoggingAspect {
             long executionTime = System.currentTimeMillis() - startTime;
 
             logData.put("response_time_ms", executionTime);
-            logData.put("status", "failed");
+            logData.put("success", false);
+            logData.put("http_status", 500); // 실패 상태 코드
             logData.put("error_message", e.getMessage());
             log.error(objectMapper.writeValueAsString(logData));
             throw e;
