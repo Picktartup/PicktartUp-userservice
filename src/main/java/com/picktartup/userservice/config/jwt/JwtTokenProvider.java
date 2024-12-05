@@ -1,6 +1,7 @@
 package com.picktartup.userservice.config.jwt;
 
 import com.picktartup.userservice.dto.UserDto;
+import com.picktartup.userservice.entity.Role;
 import com.picktartup.userservice.service.MyUserDetailsService;
 import com.picktartup.userservice.service.RedisService;
 import io.jsonwebtoken.*;
@@ -47,7 +48,7 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성하는 메소드
-    public UserDto.AuthResponse generateToken(Authentication authentication, Long userId, String name) {
+    public UserDto.AuthResponse generateToken(Authentication authentication, Long userId, String name, Role role) {
         String email = authentication.getName();
 
         Claims claims = Jwts.claims().setSubject(email);
@@ -74,6 +75,7 @@ public class JwtTokenProvider {
 
         redisService.setValues(email, refreshToken, Duration.ofMillis(REFRESH_TOKEN_VALID_TIME));
         return UserDto.AuthResponse.builder()
+                .role(role)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType(BEARER)

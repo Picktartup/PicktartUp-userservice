@@ -1,5 +1,6 @@
 package com.picktartup.userservice.service;
 
+import com.picktartup.userservice.entity.Role;
 import com.picktartup.userservice.entity.UserEntity;
 import com.picktartup.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,16 @@ public class MyUserDetailsService implements UserDetailsService {
         Optional<UserEntity> userOptional = userRepository.findByEmail(email);
         if (userOptional.isPresent()) {
             return userOptional.get().getUsername(); //사용자 이름
+        }
+
+        throw new UsernameNotFoundException("해당하는 사용자가 없습니다: " + email);
+
+    }
+
+    public Role findRoleByEmail(String email) {
+        Optional<UserEntity> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            return userOptional.get().getRole();
         }
 
         throw new UsernameNotFoundException("해당하는 사용자가 없습니다: " + email);

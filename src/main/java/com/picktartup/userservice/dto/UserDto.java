@@ -1,6 +1,9 @@
 package com.picktartup.userservice.dto;
 
+import com.picktartup.userservice.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -56,6 +59,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AuthResponse {
+        private Role role;
         private String tokenType;
         private String accessToken;
         private String refreshToken;

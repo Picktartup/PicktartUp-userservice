@@ -24,7 +24,7 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: localhost
       port: ${REDIS_PORT}
       connect-timeout: 3000ms
       client-name: my-redis-app
