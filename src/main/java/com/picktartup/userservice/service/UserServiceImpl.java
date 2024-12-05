@@ -74,7 +74,9 @@ public class UserServiceImpl implements UserService{
         SecurityContextHolder.getContext().setAuthentication(authentication);
         Long userId = myUserDetailsService.findUserIdByEmail(loginRequest.getEmail()); //1
         String name = myUserDetailsService.findNameByEmail(loginRequest.getEmail()); //fisa@gmail.com
-        UserDto.AuthResponse token = jwtTokenProvider.generateToken(authentication, userId, name);
+        Role role = myUserDetailsService.findRoleByEmail(loginRequest.getEmail()); //admin, user
+
+        UserDto.AuthResponse token = jwtTokenProvider.generateToken(authentication, userId, name, role);
         return token;
 
     }
@@ -156,7 +158,7 @@ public class UserServiceImpl implements UserService{
         if (redisServiceImpl.checkExistsValue(redisRefreshToken) && refreshToken.equals(redisRefreshToken)) {
             Optional<UserEntity> findUser = userRepository.findByEmail(email);
             UserEntity userEntity = UserEntity.of(findUser);
-            UserDto.AuthResponse tokenDto = jwtTokenProvider.generateToken(jwtTokenProvider.getAuthentication(refreshToken), userEntity.getUserId(), userEntity.getUsername());
+            UserDto.AuthResponse tokenDto = jwtTokenProvider.generateToken(jwtTokenProvider.getAuthentication(refreshToken), userEntity.getUserId(), userEntity.getUsername(), userEntity.getRole());
             return tokenDto;
         } else throw new BusinessLogicException(ExceptionList.TOKEN_IS_NOT_SAME);
 
