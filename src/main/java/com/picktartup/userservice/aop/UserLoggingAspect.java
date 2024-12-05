@@ -1,19 +1,22 @@
 package com.picktartup.userservice.aop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.picktartup.userservice.dto.UserDto;
-import com.picktartup.userservice.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Aspect
@@ -23,113 +26,102 @@ public class UserLoggingAspect {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 1. 로그인 모니터링
+    // 모든 Controller의 API 호출 정보 로깅
+    @Around("execution(* com.picktartup.userservice.controller.*.*(..))")
+    public Object logAllAPIs(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+        LocalDateTime requestTime = LocalDateTime.now();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+        Map<String, Object> logData = new HashMap<>();
+        logData.put("timestamp", requestTime.format(DateTimeFormatter.ISO_DATE_TIME));
+        logData.put("request_id", UUID.randomUUID().toString());
+        logData.put("http_method", request.getMethod());
+        logData.put("uri", request.getRequestURI());
+        logData.put("api_path", request.getRequestURI().replaceAll("/\\d+", "/{id}"));
+        logData.put("client_ip", request.getRemoteAddr());
+        logData.put("api_name", ((MethodSignature) joinPoint.getSignature()).getDeclaringType().getSimpleName() + "." + joinPoint.getSignature().getName());
+
+        try {
+            Object result = joinPoint.proceed();
+            long executionTime = System.currentTimeMillis() - startTime;
+
+            logData.put("response_time_ms", executionTime);
+            logData.put("success", true);
+            logData.put("http_status", 200); // 성공 상태 코드
+            log.info(objectMapper.writeValueAsString(logData));
+            return result;
+
+        } catch (Exception e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+
+            logData.put("response_time_ms", executionTime);
+            logData.put("success", false);
+            logData.put("http_status", 500); // 실패 상태 코드
+            logData.put("error_message", e.getMessage());
+            log.error(objectMapper.writeValueAsString(logData));
+            throw e;
+        }
+    }
+
+    // 로그인 모니터링 (특정 API)
     @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.login(..))")
     public Object monitorLogin(ProceedingJoinPoint joinPoint) throws Throwable {
-        LocalDateTime loginTime = LocalDateTime.now();
-        Object[] args = joinPoint.getArgs();
-        UserDto.SignInRequest request = (UserDto.SignInRequest) args[0];
-
         Map<String, Object> logData = new HashMap<>();
         logData.put("event_type", "login_attempt");
-        logData.put("email", request.getEmail());
-        logData.put("timestamp", loginTime.toString());
-        logData.put("hour", loginTime.getHour());
-        logData.put("day_of_week", loginTime.getDayOfWeek().toString());
 
-        try {
-            Object result = joinPoint.proceed();
-            logData.put("status", "success");
-            log.info(objectMapper.writeValueAsString(logData));
-            return result;
-        } catch (Exception e) {
-            logData.put("status", "failed");
-            logData.put("error_message", e.getMessage());
-            log.error(objectMapper.writeValueAsString(logData));
-            throw e;
-        }
+        return logAndProceed(joinPoint, logData);
     }
 
-    // 2. 회원가입 모니터링
+    // 회원가입 모니터링
     @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.register(..))")
     public Object monitorRegistration(ProceedingJoinPoint joinPoint) throws Throwable {
-        LocalDateTime startTime = LocalDateTime.now();
-        Object[] args = joinPoint.getArgs();
-        UserDto.SignUpRequest request = (UserDto.SignUpRequest) args[0];
-
         Map<String, Object> logData = new HashMap<>();
         logData.put("event_type", "registration");
-        logData.put("email", request.getEmail());
-        logData.put("timestamp", startTime.toString());
-        logData.put("hour", startTime.getHour());
-        logData.put("day_of_week", startTime.getDayOfWeek().toString());
 
-        try {
-            Object result = joinPoint.proceed();
-            long processingTimeMs = ChronoUnit.MILLIS.between(startTime, LocalDateTime.now());
-
-            logData.put("status", "success");
-            logData.put("processing_time_ms", processingTimeMs);
-            log.info(objectMapper.writeValueAsString(logData));
-            return result;
-        } catch (Exception e) {
-            logData.put("status", "failed");
-            logData.put("error_message", e.getMessage());
-            log.error(objectMapper.writeValueAsString(logData));
-            throw e;
-        }
+        return logAndProceed(joinPoint, logData);
     }
 
-    // 3. 토큰 재발급 모니터링
+    // 토큰 재발급 모니터링
     @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.reissueAccessToken(..))")
     public Object monitorTokenReissue(ProceedingJoinPoint joinPoint) throws Throwable {
-        LocalDateTime requestTime = LocalDateTime.now();
         Map<String, Object> logData = new HashMap<>();
         logData.put("event_type", "token_reissue");
-        logData.put("timestamp", requestTime.toString());
-        logData.put("hour", requestTime.getHour());
 
-        try {
-            Object result = joinPoint.proceed();
-            logData.put("status", "success");
-            log.info(objectMapper.writeValueAsString(logData));
-            return result;
-        } catch (BusinessLogicException e) {
-            logData.put("status", "failed");
-            logData.put("error_message", e.getMessage());
-            logData.put("error_type", "business");
-            log.error(objectMapper.writeValueAsString(logData));
-            throw e;
-        } catch (Exception e) {
-            logData.put("status", "failed");
-            logData.put("error_message", e.getMessage());
-            logData.put("error_type", "system");
-            log.error(objectMapper.writeValueAsString(logData));
-            throw e;
-        }
+        return logAndProceed(joinPoint, logData);
     }
 
-    // 4. 사용자 조회 모니터링
-    @Around("execution(* com.picktartup.userservice.service.UserServiceImpl.getUserById(..))")
-    public Object monitorUserRetrieval(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
-        Long userId = (Long) args[0];
+    // 공통 로깅 로직
+    private Object logAndProceed(ProceedingJoinPoint joinPoint, Map<String, Object> additionalLogData) throws Throwable {
+        long startTime = System.currentTimeMillis();
         LocalDateTime requestTime = LocalDateTime.now();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 
-        Map<String, Object> logData = new HashMap<>();
-        logData.put("event_type", "user_retrieval");
-        logData.put("user_id", userId);
-        logData.put("timestamp", requestTime.toString());
-        logData.put("hour", requestTime.getHour());
-        logData.put("day_of_week", requestTime.getDayOfWeek().toString());
+        Map<String, Object> logData = new HashMap<>(additionalLogData);
+        logData.put("timestamp", requestTime.format(DateTimeFormatter.ISO_DATE_TIME));
+        logData.put("request_id", UUID.randomUUID().toString());
+        logData.put("http_method", request.getMethod());
+        logData.put("uri", request.getRequestURI());
+        logData.put("api_path", request.getRequestURI().replaceAll("/\\d+", "/{id}"));
+        logData.put("client_ip", request.getRemoteAddr());
+        logData.put("api_name", ((MethodSignature) joinPoint.getSignature()).getDeclaringType().getSimpleName() + "." + joinPoint.getSignature().getName());
 
         try {
             Object result = joinPoint.proceed();
-            logData.put("status", "success");
+            long executionTime = System.currentTimeMillis() - startTime;
+
+            logData.put("response_time_ms", executionTime);
+            logData.put("success", true);
+            logData.put("http_status", 200); // 성공 상태 코드
             log.info(objectMapper.writeValueAsString(logData));
             return result;
+
         } catch (Exception e) {
-            logData.put("status", "failed");
+            long executionTime = System.currentTimeMillis() - startTime;
+
+            logData.put("response_time_ms", executionTime);
+            logData.put("success", false);
+            logData.put("http_status", 500); // 실패 상태 코드
             logData.put("error_message", e.getMessage());
             log.error(objectMapper.writeValueAsString(logData));
             throw e;
