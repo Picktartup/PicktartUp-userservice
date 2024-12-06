@@ -1,15 +1,19 @@
 package com.picktartup.userservice.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.Collections;
+import javax.net.ssl.SSLContext;
 
 //퍼플릭 -> 온프레 외부 통신 방식
 //단순 조회 기능이기 때문에 Resttemplate
@@ -19,41 +23,34 @@ public class RestTemplateConfig {
 
     @Bean
     public RestTemplate walletServiceRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
+        try {
+            // SSLContext 설정
+            SSLContext sslContext = SSLContextBuilder.create()
+                    .loadTrustMaterial(null, new TrustAllStrategy())
+                    .build();
 
-        // 타임아웃 설정
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(5000);
-        restTemplate.setRequestFactory(factory);
+            // SSL Connection Factory 생성
+            SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(
+                    sslContext,
+                    NoopHostnameVerifier.INSTANCE
+            );
 
-        // 에러 핸들러 추가
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            public boolean hasError(ClientHttpResponse response) throws IOException {
-                try {
-                    return super.hasError(response);
-                } catch (Exception e) {
-                    log.error("Error checking response: {}", e.getMessage());
-                    return true;
-                }
-            }
-        });
+            // CloseableHttpClient 생성
+            CloseableHttpClient httpClient = HttpClients.custom()
+                    .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
+                            .setSSLSocketFactory(sslFactory)
+                            .build())
+                    .build();
 
-        // 로깅 인터셉터
-        restTemplate.setInterceptors(Collections.singletonList((request, body, execution) -> {
-            log.info("=== Wallet Service Request ===");
-            log.info("URL: {} {}", request.getMethod(), request.getURI());
-            log.info("Headers: {}", request.getHeaders());
+            // HttpComponentsClientHttpRequestFactory 생성
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
 
-            ClientHttpResponse response = execution.execute(request, body);
-
-            log.info("=== Wallet Service Response ===");
-            log.info("Status: {}", response.getStatusCode());
-
-            return response;
-        }));
-
-        return restTemplate;
+            return new RestTemplate(requestFactory);
+        } catch (Exception e) {
+            log.error("Error creating RestTemplate with SSL configuration: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
