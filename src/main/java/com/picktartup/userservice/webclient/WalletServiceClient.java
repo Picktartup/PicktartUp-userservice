@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
 import java.math.BigDecimal;
 
 @Slf4j
@@ -88,4 +89,5 @@ public class WalletServiceClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
+
 }
